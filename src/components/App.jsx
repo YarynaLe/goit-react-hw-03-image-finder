@@ -20,16 +20,16 @@ class App extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, page } = this.state;
+    const { searchQuery, page, hits, totalHits } = this.state;
 
     if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
       this.setState({ loading: true });
 
       fetchQuery(searchQuery, page)
         .then(resp =>
-          this.setState(prevState => ({
-            images: [...prevState.images, ...resp.images],
-            totalImages: resp.TotalHits,
+          this.setState(prev => ({
+            images: [...prev.images, ...hits],
+            loadMore: this.state.page < Math.ceil(totalHits / 12),
           }))
         )
         .catch(error => console.log(error))
@@ -67,14 +67,14 @@ class App extends Component {
   };
 
   render() {
-    const { images, largeImage, loading, totalImages } = this.state;
+    const { images, largeImage, loading, loadMore } = this.state;
 
     return (
       <Container>
         <Searchbar onSubmit={this.searchQueryValue} />
         <ImageGallery images={images} getModalImage={this.getModalImage} />
         {loading && <Loader />}
-        {totalImages !== images.length && (
+        {loadMore && !loading && images.length > 0 && (
           <Button onClick={this.handleLoadMore} />
         )}
 
